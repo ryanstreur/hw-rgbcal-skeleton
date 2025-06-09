@@ -1,15 +1,20 @@
 use crate::*;
 
+/// Implementation type for Saadc:
+/// Successive Approximation Analog to Digital Converter
 pub type Adc = saadc::Saadc<'static, 1>;
 
+/// Struct wrapper for ADC
 pub struct Knob(Adc);
 
 impl Knob {
+    /// Create new Knob
     pub async fn new(adc: Adc) -> Self {
         adc.calibrate().await;
         Self(adc)
     }
 
+    /// Read value from Knob
     pub async fn measure(&mut self) -> u32 {
         let mut buf = [0];
         self.0.sample(&mut buf).await;

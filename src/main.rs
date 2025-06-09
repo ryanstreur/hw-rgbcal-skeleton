@@ -1,9 +1,15 @@
 #![no_std]
 #![no_main]
 
-mod knob;
-mod rgb;
-mod ui;
+/// Logic to control the POTS knob
+pub mod knob;
+
+/// Logic to control the RGB display through the LED diode
+pub mod rgb;
+
+/// Logic to respond to user input
+pub mod ui;
+
 pub use knob::*;
 pub use rgb::*;
 pub use ui::*;
@@ -25,14 +31,19 @@ use microbit_bsp::{
 };
 use num_traits::float::FloatCore;
 
+/// Mutex to share LED RGB Diode levels between RGB and UI threads
 pub static RGB_LEVELS: Mutex<ThreadModeRawMutex, [u32; 3]> = Mutex::new([0; 3]);
+
+/// Maximum level for RGBs?
 pub const LEVELS: u32 = 16;
 
+/// Retrieve RGB levels from global mutex
 async fn get_rgb_levels() -> [u32; 3] {
     let rgb_levels = RGB_LEVELS.lock().await;
     *rgb_levels
 }
 
+/// Set RGB levels in global mutex
 async fn set_rgb_levels<F>(setter: F)
 where
     F: FnOnce(&mut [u32; 3]),
@@ -41,13 +52,16 @@ where
     setter(&mut rgb_levels);
 }
 
+/// Mutex to share frame rate between RGB and UI threads
 pub static FRAME_RATE: Mutex<ThreadModeRawMutex, u64> = Mutex::new(100);
 
+/// Get copy of frame rate from global mutex
 async fn get_frame_rate() -> u64 {
     let frame_rate = FRAME_RATE.lock().await;
     *frame_rate
 }
 
+/// Set frame rate in global mutex
 async fn set_frame_rate<F>(setter: F)
 where
     F: FnOnce(&mut u64),
@@ -56,6 +70,7 @@ where
     setter(&mut frame_rate);
 }
 
+/// Main execution function
 #[embassy_executor::main]
 async fn main(_spawner: Spawner) -> ! {
     rtt_init_print!();

@@ -1,11 +1,13 @@
 use crate::*;
 
+/// Struct to store local values for RGB levels and frame rate
 struct UiState {
     levels: [u32; 3],
     frame_rate: u64,
 }
 
 impl UiState {
+    /// Print current UI state to console
     fn show(&self) {
         let names = ["red", "green", "blue"];
         rprintln!();
@@ -25,7 +27,9 @@ impl Default for UiState {
     }
 }
 
+/// Struct for managing UI elements and state
 pub struct Ui {
+    ///
     knob: Knob,
     _button_a: Button,
     _button_b: Button,
@@ -33,6 +37,7 @@ pub struct Ui {
 }
 
 impl Ui {
+    /// Create new UI
     pub fn new(knob: Knob, _button_a: Button, _button_b: Button) -> Self {
         Self {
             knob,
@@ -86,6 +91,7 @@ impl Ui {
         }
     }
 
+    // Set RGB level
     async fn set_rgb_level(&mut self, level_to_set: usize, level: &u32) {
         if self.state.levels[level_to_set] == *level {
             return;

@@ -42,6 +42,7 @@ impl Ui {
         }
     }
 
+    /// Run the UI loop
     pub async fn run(&mut self) -> ! {
         self.state.levels[2] = self.knob.measure().await;
         set_rgb_levels(|rgb| {
@@ -51,15 +52,59 @@ impl Ui {
         self.state.show();
         loop {
             let level = self.knob.measure().await;
-            if level != self.state.levels[2] {
-                self.state.levels[2] = level;
-                self.state.show();
-                set_rgb_levels(|rgb| {
-                    *rgb = self.state.levels;
-                })
-                .await;
+
+            rprintln!("Knob: {}", level);
+
+            let a_down = self._button_a.is_low();
+            let b_down = self._button_b.is_low();
+
+            match (a_down, b_down) {
+                (false, false) => {
+                    // rprintln!("Both up");
+                    let new_fps = (1 + level as u64) * 10;
+                    if new_fps != self.state.frame_rate {
+                        self.state.frame_rate = new_fps;
+                        rprintln!("Set Frame Rate: {}", new_fps);
+                    }
+                },
+                (true, false) => {
+                    rprintln!("A down, B up");
+                    self.set_rgb_level(2, &level).await;
+                },
+                (false, true) => {
+                    rprintln!("A up, B down");
+                    self.set_rgb_level(1, &level).await;
+                },
+                (true, true) => {
+                  rprintln!("both down");
+                  self.set_rgb_level(0, &level).await;
+                }
             }
-            Timer::after_millis(50).await;
+
+            Timer::after_millis(1000 / self.state.frame_rate).await;
         }
+    }
+
+    async fn set_rgb_level(&mut self, level_to_set: usize, level: &u32) {
+        if self.state.levels[level_to_set] == *level {
+          return;
+        }
+
+        
+        let color_string = match level_to_set {
+          0 => "Red",
+          1 => "Green",
+          2 => "Blue",
+          _ => "Undefined"
+        };
+
+        rprintln!("Setting {} to {}", color_string, level);
+
+        self.state.levels[level_to_set] = *level;
+        self.state.show();
+        set_rgb_levels(|rgb| {
+            *rgb = self.state.levels;
+        })
+        .await
     }
 }

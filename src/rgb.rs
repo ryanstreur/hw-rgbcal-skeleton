@@ -2,6 +2,7 @@ use crate::*;
 
 type RgbPins = [Output<'static, AnyPin>; 3];
 
+/// Representation of RGB Pins and the data necessary to display specific colors
 pub struct Rgb {
     rgb: RgbPins,
     // Shadow variables to minimize lock contention.

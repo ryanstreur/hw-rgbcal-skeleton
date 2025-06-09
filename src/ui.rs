@@ -65,37 +65,37 @@ impl Ui {
                     if new_fps != self.state.frame_rate {
                         self.state.frame_rate = new_fps;
                         rprintln!("Set Frame Rate: {}", new_fps);
+                        set_frame_rate(|rate| *rate = new_fps).await;
                     }
-                },
+                }
                 (true, false) => {
                     rprintln!("A down, B up");
                     self.set_rgb_level(2, &level).await;
-                },
+                }
                 (false, true) => {
                     rprintln!("A up, B down");
                     self.set_rgb_level(1, &level).await;
-                },
+                }
                 (true, true) => {
-                  rprintln!("both down");
-                  self.set_rgb_level(0, &level).await;
+                    rprintln!("both down");
+                    self.set_rgb_level(0, &level).await;
                 }
             }
 
-            Timer::after_millis(1000 / self.state.frame_rate).await;
+            Timer::after_millis(50).await;
         }
     }
 
     async fn set_rgb_level(&mut self, level_to_set: usize, level: &u32) {
         if self.state.levels[level_to_set] == *level {
-          return;
+            return;
         }
 
-        
         let color_string = match level_to_set {
-          0 => "Red",
-          1 => "Green",
-          2 => "Blue",
-          _ => "Undefined"
+            0 => "Red",
+            1 => "Green",
+            2 => "Blue",
+            _ => "Undefined",
         };
 
         rprintln!("Setting {} to {}", color_string, level);
